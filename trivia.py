@@ -11,8 +11,7 @@ from melo.api import TTS
 import time
 
 # Set up ImageMagick (if needed)
-change_settings(
-    {"IMAGEMAGICK_BINARY": r"C:\\Program Files\\ImageMagick-7.1.1-Q16-HDRI\\magick.exe"})
+change_settings({})
 
 # Initialize TTS
 speed = 1
@@ -232,25 +231,19 @@ def create_video_clips(trivia_list, audio_files, ticking_sound):
 
 
 def generate_video(clips, output_name="trivia_video.mp4"):
-    # Check for clips with None durations
-    for i, clip in enumerate(clips):
-        if clip.duration is None:
-            print(f"Error: Clip at index {i} has no duration.")
-            return  # Exit early if there's an issue
-
     end_credit_video = VideoFileClip('output/YoutubeTriviaEndCredit.mp4')
     clips.append(end_credit_video)
     final_video = concatenate_videoclips(clips, method="compose")
 
-    timestamp = int(time.time())  # Get the current timestamp
-    # Append timestamp and category to the name
+    timestamp = int(time.time())
     unique_output_name = f"{output_name.split('.')[0]}_{TRIVIA_CATEGORY}_{timestamp}.mp4"
     final_path = f"output/videos/{unique_output_name}"
+    
+    # Modified encoding parameters for Ubuntu
     final_video.write_videofile(
         final_path,
         fps=5,
-        codec="h264_nvenc",
-        ffmpeg_params=["-preset", "fast"],
+        codec='libx264',  # Changed from h264_nvenc
         audio_codec="aac",
     )
     print(f"Video saved at {final_path}")
