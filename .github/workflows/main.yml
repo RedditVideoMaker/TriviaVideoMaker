@@ -16,7 +16,7 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        cache: 'pip'  # Enables pip caching
+        cache: 'pip'
     
     - name: Cache MeloTTS
       uses: actions/cache@v4
@@ -24,14 +24,19 @@ jobs:
       with:
         path: |
           MeloTTS
-          ~/.cache/unidic  # Cache the unidic download
+          ~/.cache/unidic
         key: ${{ runner.os }}-melotts-${{ hashFiles('MeloTTS/**') }}
     
-    - name: Cache apt packages
-      uses: awalsh128/cache-apt-pkgs-action@latest
-      with:
-        packages: imagemagick ffmpeg
-        version: 1.0
+    - name: Install and Configure ImageMagick
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y imagemagick
+        sudo sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@*"/' /etc/ImageMagick-6/policy.xml
+        sudo sed -i 's/<policy domain="path" rights="none" pattern="@\*"/<policy domain="path" rights="read|write" pattern="@*"/' /etc/ImageMagick-6/policy.xml
+        
+    - name: Install FFmpeg
+      run: |
+        sudo apt-get install -y ffmpeg
     
     - name: Install dependencies
       run: |
