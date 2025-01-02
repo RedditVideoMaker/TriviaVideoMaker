@@ -1,0 +1,49 @@
+name: Daily Trivia Generation
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # Runs at 12:00 UTC daily
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  generate-trivia:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.10'
+    
+    - name: Install ImageMagick
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y imagemagick
+        
+    - name: Install FFmpeg
+      run: |
+        sudo apt-get install -y ffmpeg
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install moviepy requests nltk
+        
+    - name: Install MeloTTS
+      run: |
+        git clone https://github.com/myshell-ai/MeloTTS.git
+        cd MeloTTS
+        pip install -e .
+        python -m unidic download
+        cd ..
+    
+    - name: Run trivia generator
+      run: python trivia_generator.py
+      
+    - name: Upload video
+      uses: actions/upload-artifact@v2
+      with:
+        name: trivia-video
+        path: output/videos/*.mp4
